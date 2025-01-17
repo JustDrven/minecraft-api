@@ -1,4 +1,4 @@
-package dev.justdrven.minecraft.user.orm;
+package dev.justdrven.minecraft.user.request;
 
 public class UserRequest {
 
