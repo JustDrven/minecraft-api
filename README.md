@@ -1,6 +1,6 @@
 # Minecraft API
 
-Easy API for getting user's data
+Easy API for getting user's data. The API uses PostgreSQL to store the data.
 
 ### Endpoints:
 
