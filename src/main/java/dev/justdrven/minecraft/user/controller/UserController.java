@@ -81,7 +81,11 @@ public class UserController {
     }
 
     @DeleteMapping("/nick/{nick}")
-    public ResponseEntity<User> deleteUserByNick(@PathVariable("nick") String nick) {
+    public ResponseEntity<User> deleteUserByNick(@RequestHeader(value = "X-API-Key", required = false) String key, @PathVariable("nick") String nick) {
+        if (!verifyAPIKey(key)) {
+            throw new AccessDeniedException();
+        }
+
         User user = userRepository.findByNick(nick)
                 .orElseThrow(UserNotFoundException::new);
 
@@ -91,7 +95,11 @@ public class UserController {
     }
 
     @DeleteMapping("/uuid/{uuid}")
-    public ResponseEntity<User> deleteUserByUuid(@PathVariable("uuid") String uuid) {
+    public ResponseEntity<User> deleteUserByUuid(@RequestHeader(value = "X-API-Key", required = false) String key, @PathVariable("uuid") String uuid) {
+        if (!verifyAPIKey(key)) {
+            throw new AccessDeniedException();
+        }
+
         User user = userRepository.findByUuid(uuid)
                 .orElseThrow(UserNotFoundException::new);
 
