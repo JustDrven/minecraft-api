@@ -1,16 +1,18 @@
 package dev.justdrven.minecraft.user.controller;
 
+import dev.justdrven.minecraft.user.exception.AccessDeniedException;
 import dev.justdrven.minecraft.user.exception.BadRequestBodyException;
 import dev.justdrven.minecraft.user.exception.UserAlreadyExistException;
 import dev.justdrven.minecraft.user.exception.UserNotFoundException;
 import dev.justdrven.minecraft.user.orm.User;
 import dev.justdrven.minecraft.user.orm.UserRequest;
 import dev.justdrven.minecraft.user.repository.UserRepository;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
+import java.util.List;
 
 @RestController
 @RequestMapping(
@@ -27,30 +29,31 @@ public class UserController {
 
     @GetMapping("/uuid/{uuid}")
     public ResponseEntity<User> getUserByUUID(@PathVariable("uuid") String uuid) {
-        Optional<User> user = userRepository.findByUuid(uuid);
+        return ResponseEntity.ok(userRepository.findByUuid(uuid).orElseThrow(UserNotFoundException::new));
 
-        if (user.isPresent()) {
-            return ResponseEntity.ok(user.get());
-        } else {
-            throw new UserNotFoundException();
-        }
     }
 
+    @GetMapping("/list")
+    public List<User> getUsers(@RequestHeader(value = "X-API-Key", required = false) String key) {
+        if (!checkAPIKey(key)) {
+            throw new AccessDeniedException();
+        }
+
+        return userRepository.findAll();
+    }
 
     @GetMapping("/nick/{nick}")
     public ResponseEntity<User> getUserByNick(@PathVariable("nick") String nick) {
-        Optional<User> user = userRepository.findByNick(nick);
-
-        if (user.isPresent()) {
-            return ResponseEntity.ok(user.get());
-        } else {
-            throw new UserNotFoundException();
-        }
+        return ResponseEntity.ok(userRepository.findByNick(nick).orElseThrow(UserNotFoundException::new));
     }
 
     @PostMapping
-    public ResponseEntity<User> addUser(@RequestBody(required = false) UserRequest userRequest) {
-        if (userRequest.getNick() == null || userRequest.getUuid() == null) {
+    public ResponseEntity<User> addUser(@RequestHeader(value = "X-API-Key", required = false) String key, @RequestBody(required = false) UserRequest userRequest) {
+        if (!checkAPIKey(key)) {
+            throw new AccessDeniedException();
+        }
+
+        if (userRequest == null || userRequest.getNick() == null || userRequest.getUuid() == null) {
             throw new BadRequestBodyException();
         }
         if (userRepository.existsByNick(userRequest.getNick())) {
@@ -65,6 +68,10 @@ public class UserController {
         userRepository.save(user);
 
         return ResponseEntity.ok(user);
+    }
+
+    private boolean checkAPIKey(String key) {
+        return key != null && System.getProperty("API_KEY", "test").equals(key);
     }
 
 }
