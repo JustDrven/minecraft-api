@@ -1,0 +1,17 @@
+version: "3.1"
+
+services:
+  database:
+    image: postgres:17-alpine
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: minecraft-user
+      POSTGRES_PASSWORD: minecraft-password
+      POSTGRES_DB: minecraft-db
+    volumes:
+      - minecraft-storage:/var/lib/postgres
+
+volumes:
+  minecraft-storage:
