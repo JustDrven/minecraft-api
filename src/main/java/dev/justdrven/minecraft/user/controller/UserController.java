@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(
@@ -78,6 +79,26 @@ public class UserController {
         userRepository.save(user);
 
         return ResponseEntity.ok(user);
+    }
+
+    @DeleteMapping("/nick/{nick}")
+    public ResponseEntity<User> deleteUserByNick(@PathVariable("nick") String nick) {
+        User user = userRepository.findByNick(nick)
+                .orElseThrow(UserNotFoundException::new);
+
+        userRepository.delete(user);
+
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/uuid/{uuid}")
+    public ResponseEntity<User> deleteUserByUuid(@PathVariable("uuid") String uuid) {
+        User user = userRepository.findByUuid(uuid)
+                .orElseThrow(UserNotFoundException::new);
+
+        userRepository.delete(user);
+
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     private boolean verifyAPIKey(String key) {
